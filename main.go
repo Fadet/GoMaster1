@@ -57,6 +57,9 @@ func handleResponse(resp *http.Response) bool {
 	}
 
 	stringData := strings.Split(strings.TrimSpace(string(bodyBytes)), ",")
+	if len(stringData) != 7 {
+		return false
+	}
 
 	data := make([]int, len(stringData))
 	for i, s := range stringData {
@@ -85,7 +88,7 @@ func processData(loadAvg, ramTotal, ramUsed, diskTotal, diskUsed, bandwidthTotal
 		fmt.Printf("Load Average is too high: %d\n", loadAvg)
 	}
 	if ramUsed > ramTotal*80/100 {
-		fmt.Printf("Memory usage too high: %d%%\n", float32(ramUsed)/float32(ramTotal)*100)
+		fmt.Printf("Memory usage too high: %d%%\n", int(float32(ramUsed)/float32(ramTotal)*100))
 	}
 	if diskUsed > diskTotal*90/100 {
 		fmt.Printf("Free disk space is too low: %d Mb left\n", (diskTotal-diskUsed)/1024/1024)
