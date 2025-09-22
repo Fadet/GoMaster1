@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	url      = "https://srv.msk01.gigacorp.local"
-	interval = 2 * time.Second
+	url      = "srv.msk01.gigacorp.local"
+	interval = 0 * time.Second
 	timeout  = 5 * time.Second
 )
 
@@ -23,7 +23,7 @@ func main() {
 	}
 
 	for {
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url+"/_stats", nil)
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url+"/stats", nil)
 		if err != nil {
 			fmt.Printf("Request creation error: %v\n", err)
 			incrementError()
@@ -51,7 +51,7 @@ func main() {
 func handleResponse(resp *http.Response) bool {
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK || resp.Header.Get("Content-Type") != "text/plain" {
 		return false
 	}
 
