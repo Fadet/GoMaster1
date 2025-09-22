@@ -25,16 +25,12 @@ func main() {
 	for {
 		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url+"/stats", nil)
 		if err != nil {
-			fmt.Printf("Request creation error: %v\n", err)
-			incrementError()
-			time.Sleep(interval)
-			continue
+			panic(err)
 		}
 
 		resp, err := client.Do(req)
 		if err != nil {
-			fmt.Printf("Request error: %v\n", err)
-			incrementError()
+			panic(err)
 		} else {
 			ok := handleResponse(resp)
 			if !ok {
@@ -92,12 +88,12 @@ func processData(loadAvg, ramTotal, ramUsed, diskTotal, diskUsed, bandwidthTotal
 		fmt.Printf("Load Average is too high: %d\n", loadAvg)
 	}
 	if ramUsed > ramTotal*80/100 {
-		fmt.Printf("Memory usage too high: %d%%\n", ramUsed*100/ramTotal)
+		fmt.Printf("Memory usage too high: %d%%\n", float32(ramUsed)/float32(ramTotal)*100)
 	}
 	if diskUsed > diskTotal*90/100 {
-		fmt.Printf("Free disk space is too low: %d Mb left\n", diskTotal-diskUsed)
+		fmt.Printf("Free disk space is too low: %d Mb left\n", (diskTotal-diskUsed)/1024/1024)
 	}
 	if bandwidthUsed > bandwidthTotal*90/100 {
-		fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", bandwidthTotal-bandwidthUsed)
+		fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", (bandwidthTotal-bandwidthUsed)/1000/1000)
 	}
 }
