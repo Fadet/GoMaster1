@@ -10,24 +10,24 @@ import (
 )
 
 const (
-	URL      = "https://srv.msk01.gigacorp.local"
-	INTERVAL = 2 * time.Second
-	TIMEOUT  = 5 * time.Second
+	url      = "https://srv.msk01.gigacorp.local"
+	interval = 2 * time.Second
+	timeout  = 5 * time.Second
 )
 
 var errorCount int
 
 func main() {
 	client := &http.Client{
-		Timeout: TIMEOUT,
+		Timeout: timeout,
 	}
 
 	for {
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, URL+"/_stats", nil)
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url+"/_stats", nil)
 		if err != nil {
 			fmt.Printf("Request creation error: %v\n", err)
 			incrementError()
-			time.Sleep(INTERVAL)
+			time.Sleep(interval)
 			continue
 		}
 
@@ -40,11 +40,11 @@ func main() {
 			if !ok {
 				incrementError()
 			} else {
-				errorCount = 0 // reset on success
+				errorCount = 0
 			}
 		}
 
-		time.Sleep(INTERVAL)
+		time.Sleep(interval)
 	}
 }
 
@@ -60,25 +60,44 @@ func handleResponse(resp *http.Response) bool {
 		return false
 	}
 
-	string_data := strings.Split(strings.TrimSpace(string(bodyBytes)), ",")
-	data := make([]int, len(string_data))
-	for i, s := range string_data {
+	stringData := strings.Split(strings.TrimSpace(string(bodyBytes)), ",")
+	if len(stringData) != 7 {
+		return false
+	}
+
+	data := make([]int, len(stringData))
+	for i, s := range stringData {
 		var value int
 		if _, err := fmt.Sscanf(strings.TrimSpace(s), "%d", &value); err == nil {
 			data[i] = value
 		} else {
-			return false // format error
+			return false
 		}
 	}
 
-	// Print stats if needed
-	fmt.Printf("Server stats: %v\n", data)
+	processData(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
+
 	return true
 }
 
 func incrementError() {
 	errorCount++
 	if errorCount >= 3 {
-		fmt.Println("Unable to fetch server stats. Please check the server.")
+		fmt.Println("Unable to fetch server statistic")
+	}
+}
+
+func processData(loadAvg, ramTotal, ramUsed, diskTotal, diskUsed, bandwidthTotal, bandwidthUsed int) {
+	if loadAvg > 30 {
+		fmt.Printf("Load Average is too high: %d\n", loadAvg)
+	}
+	if ramUsed > ramTotal*80/100 {
+		fmt.Printf("Memory usage too high: %d%%\n", ramUsed*100/ramTotal)
+	}
+	if diskUsed > diskTotal*90/100 {
+		fmt.Printf("Free disk space is too low: %d Mb left\n", diskTotal-diskUsed)
+	}
+	if bandwidthUsed > bandwidthTotal*90/100 {
+		fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", bandwidthTotal-bandwidthUsed)
 	}
 }
