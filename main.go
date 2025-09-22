@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	url      = "srv.msk01.gigacorp.local"
-	interval = 0 * time.Second
+	url      = "http://srv.msk01.gigacorp.local"
+	interval = 2 * time.Second
 	timeout  = 5 * time.Second
 )
 
