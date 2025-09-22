@@ -47,7 +47,7 @@ func main() {
 func handleResponse(resp *http.Response) bool {
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK || resp.Header.Get("Content-Type") != "text/plain" {
+	if resp.StatusCode != http.StatusOK {
 		return false
 	}
 
@@ -57,9 +57,6 @@ func handleResponse(resp *http.Response) bool {
 	}
 
 	stringData := strings.Split(strings.TrimSpace(string(bodyBytes)), ",")
-	if len(stringData) != 7 {
-		return false
-	}
 
 	data := make([]int, len(stringData))
 	for i, s := range stringData {
